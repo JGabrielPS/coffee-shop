@@ -3,25 +3,66 @@ import Title from "../global/Title"
 import { GatsbyImage, getImage } from "gatsby-plugin-image"
 
 const Menu = ({ items }) => {
+  const getCategories = items => {
+    const categories = [
+      "all",
+      ...Array.from(
+        new Set(
+          items.map(item => {
+            return item.node.category
+          })
+        )
+      ),
+    ]
+
+    return categories
+  }
+
   const [drinks, setDrinks] = useState({
     coffeeItems: items.edges,
+    categories: getCategories(items.edges),
   })
+
+  const handleItems = category => {
+    const tempItems = items.edges
+
+    if (category === "all") {
+      setDrinks({ ...drinks, coffeeItems: tempItems })
+    } else {
+      let newItems = tempItems.filter(({ node }) => node.category === category)
+      setDrinks({ ...drinks, coffeeItems: newItems })
+    }
+  }
 
   return (
     <section className="menu py-5">
       <div className="container">
         <Title title="best of our menu" />
+        <div className="row mb-5">
+          <div className="col-10 mx-auto text-center">
+            {drinks.categories.map((category, index) => {
+              return (
+                <button
+                  key={index}
+                  className="btn btn-yellow text-capitalize m-3"
+                  type="button"
+                  onClick={() => handleItems(category)}
+                >
+                  {category}
+                </button>
+              )
+            })}
+          </div>
+        </div>
         <div className="row">
           {drinks.coffeeItems.length > 0 ? (
-            drinks.coffeeItems.map(node => {
+            drinks.coffeeItems.map(({ node }) => {
               const {
-                node: {
-                  id,
-                  title,
-                  description: { description },
-                  price,
-                  image,
-                },
+                id,
+                title,
+                description: { description },
+                price,
+                image,
               } = node
               const img = getImage(image)
 
